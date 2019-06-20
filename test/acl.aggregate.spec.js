@@ -1,6 +1,6 @@
 "use strict";
 const { ServiceBroker } = require("moleculer");
-const { Aggregate } = require("../index");
+const { AclAggregate } = require("../index");
 
 const timestamp = Date.now();
 
@@ -20,7 +20,7 @@ describe("Test service", () => {
                 logger: console,
                 logLevel: "debug" //"info"
             });
-            aggregate = await broker.createService(Aggregate, Object.assign({
+            aggregate = await broker.createService(AclAggregate, Object.assign({
                 settings: { 
                     uri: process.env.NEO4J_URI || "bolt://localhost:7687",
                     user: "neo4j",
@@ -53,6 +53,110 @@ describe("Test service", () => {
             });
         });
 
+        it("it should add a second group with a member", async () => {
+            let params = {
+                event: "groups.user.joined",
+                payload: {
+                    groupId: "G2-" + timestamp,
+                    userId: "U2-" + timestamp,
+                    role: "member"
+                },
+                version: "1",
+                uid: "UID-" + timestamp,
+                timestamp: timestamp 
+            };
+            return broker.call("acl.aggregate.eachEvent", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res).toEqual(true);
+            });
+        });
+
+        it("it should add a new member to second group", async () => {
+            let params = {
+                event: "groups.user.joined",
+                payload: {
+                    groupId: "G2-" + timestamp,
+                    userId: "U3-" + timestamp,
+                    role: "member"
+                },
+                version: "1",
+                uid: "UID-" + timestamp,
+                timestamp: timestamp 
+            };
+            return broker.call("acl.aggregate.eachEvent", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res).toEqual(true);
+            });
+        });
+
+        it("it should remove a member from second group", async () => {
+            let params = {
+                event: "groups.user.left",
+                payload: {
+                    groupId: "G2-" + timestamp,
+                    userId: "U3-" + timestamp
+                },
+                version: "1",
+                uid: "UID-" + timestamp,
+                timestamp: timestamp 
+            };
+            return broker.call("acl.aggregate.eachEvent", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res).toEqual(true);
+            });
+        });
+
+        it("it should add a new member to second group", async () => {
+            let params = {
+                event: "groups.user.joined",
+                payload: {
+                    groupId: "G2-" + timestamp,
+                    userId: "U4-" + timestamp,
+                    role: "member"
+                },
+                version: "1",
+                uid: "UID-" + timestamp,
+                timestamp: timestamp 
+            };
+            return broker.call("acl.aggregate.eachEvent", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res).toEqual(true);
+            });
+        });
+
+        it("it should delete a user", async () => {
+            let params = {
+                event: "users.deleted",
+                payload: {
+                    userId: "U4-" + timestamp
+                },
+                version: "1",
+                uid: "UID-" + timestamp,
+                timestamp: timestamp 
+            };
+            return broker.call("acl.aggregate.eachEvent", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res).toEqual(true);
+            });
+        });
+
+        it("it should delete a group", async () => {
+            let params = {
+                event: "groups.deleted",
+                payload: {
+                    groupId: "G2-" + timestamp
+                },
+                version: "1",
+                uid: "UID-" + timestamp,
+                timestamp: timestamp 
+            };
+            return broker.call("acl.aggregate.eachEvent", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res).toEqual(true);
+            });
+        });
+
+        
     });
     
     describe("Test stop broker", () => {

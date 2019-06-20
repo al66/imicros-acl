@@ -5,7 +5,7 @@
 
 module.exports = {
     Acl: require("./lib/acl"),
-    Mixin: require("./lib/acl.mixin"),
-    Middleware: require("./lib/acl.middleware"),
-    Aggregate: require("./lib/acl.aggregate")
+    AclMixin: require("./lib/acl.mixin"),
+    AclMiddleware: require("./lib/acl.middleware"),
+    AclAggregate: require("./lib/acl.aggregate")
 };

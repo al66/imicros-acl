@@ -1,6 +1,6 @@
 "use strict";
 const { ServiceBroker } = require("moleculer");
-const { Mixin } = require("../index");
+const { AclMixin } = require("../index");
 const { Compiler } = require("imicros-rules-compiler");
 
 const timestamp = Date.now();
@@ -12,7 +12,7 @@ const Store = {
             service: "ACL"
         }
     },
-    mixins: [Mixin],
+    mixins: [AclMixin],
     actions: {
         add: {
             async handler(ctx) {

@@ -1,6 +1,6 @@
 "use strict";
 const { ServiceBroker } = require("moleculer");
-const { Aggregate } = require("../index");
+const { AclAggregate } = require("../index");
 const { Acl } = require("../index");
 const { Compiler } = require("imicros-rules-compiler");
 
@@ -32,7 +32,7 @@ describe("Test service", () => {
                 logger: console,
                 logLevel: "debug" //"info"
             });
-            aggregate = await broker.createService(Aggregate, Object.assign({
+            aggregate = await broker.createService(AclAggregate, Object.assign({
                 settings: { 
                     uri: process.env.NEO4J_URI || "bolt://localhost:7687",
                     user: "neo4j",

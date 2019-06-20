@@ -10,6 +10,7 @@
     "test": "jest --coverage --no-cache",
     "test-local": "jest --coverage --no-cache --config=local.js",
     "test-acl": "jest test/acl.spec.js --coverage --no-cache --config=local.js",
+    "test-aggregate": "jest test/acl.aggregate.spec.js --coverage --no-cache --config=local.js",
     "test-mixin": "jest test/acl.mixin.spec.js --coverage --no-cache --config=local.js",
     "test-middleware": "jest test/acl.middleware.spec.js --coverage --no-cache --config=local.js"
   },

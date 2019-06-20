@@ -1,9 +1,9 @@
 "use strict";
 const { ServiceBroker } = require("moleculer");
-const { Middleware } = require("../index");
-const { Aggregate } = require("../index");
+const { AclMiddleware } = require("../index");
+const { AclAggregate } = require("../index");
 const { Acl } = require("../index");
-const { Mixin } = require("../index");
+const { AclMixin } = require("../index");
 
 const fs = require("fs");
 process.env.JWT_SECRET = fs.readFileSync("dev/private.pem");
@@ -12,7 +12,7 @@ const timestamp = Date.now();
 
 const Service = {
     name: "service",
-    mixins: [Mixin],
+    mixins: [AclMixin],
     actions: {
         get: {
             async handler(ctx) {
@@ -39,9 +39,9 @@ describe("Test service", () => {
             broker = new ServiceBroker({
                 logger: console,
                 logLevel: "debug", //"info"
-                middlewares: [Middleware]
+                middlewares: [AclMiddleware]
             });
-            aggregate = await broker.createService(Aggregate, Object.assign({
+            aggregate = await broker.createService(AclAggregate, Object.assign({
                 settings: { 
                     uri: process.env.NEO4J_URI || "bolt://localhost:7687",
                     user: "neo4j",
