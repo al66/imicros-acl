@@ -114,7 +114,7 @@ describe("Test service", () => {
     describe("Test grants", () => {
 
         beforeEach(() => {
-            opts = { meta: { user: { id: `U-${timestamp}` , email: `U-${timestamp}@host.com` }, acl: { owner: `G-${timestamp}` } } };
+            opts = { meta: { user: { id: `U-${timestamp}` , email: `U-${timestamp}@host.com` }, acl: { ownerId: `G-${timestamp}` } } };
         });
         
         it("it should add a grant for second group", async () => {
@@ -191,7 +191,7 @@ describe("Test service", () => {
             return broker.call("acl.verify", params, opts).then(res => {
                 expect(res.acl).toBeDefined();
                 expect(res.acl.unrestricted).toEqual(true);
-                expect(res.acl.owner).toEqual("G-" + timestamp);
+                expect(res.acl.ownerId).toEqual("G-" + timestamp);
             });
         });
     
@@ -216,7 +216,7 @@ describe("Test service", () => {
             return broker.call("acl.verify", params, opts).then(async res => {
                 expect(res.acl).toBeDefined();
                 expect(res.acl.unrestricted).not.toBeDefined();
-                expect(res.acl.owner).toEqual("G-" + timestamp);
+                expect(res.acl.ownerId).toEqual("G-" + timestamp);
                 expect(res.acl.grants).toHaveLength(1);
                 expect(res.acl.grants[0].function).toEqual(await Compiler.compile(exp));
             });
