@@ -1,6 +1,6 @@
 {
   "name": "imicros-acl",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Moleculer service for access control",
   "main": "index.js",
   "directories": {
@@ -9,6 +9,7 @@
   "scripts": {
     "test": "jest --coverage --no-cache",
     "test-local": "jest --coverage --no-cache --config=local.js",
+    "test-db": "jest test/db.neo4j.spec.js --coverage --no-cache --config=local.js",
     "test-acl": "jest test/acl.spec.js --coverage --no-cache --config=local.js",
     "test-aggregate": "jest test/acl.aggregate.spec.js --coverage --no-cache --config=local.js",
     "test-mixin": "jest test/acl.mixin.spec.js --coverage --no-cache --config=local.js",

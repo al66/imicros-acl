@@ -86,6 +86,7 @@ await this.isAuthorized({
     action: 'read'          // name of the called action or a specific command like read,write,update'
 });
 ```
+The original called action is also available in grant rules under <code>environment.action</code>.
 ## Usage acl middleware
 ```
 const { AclMiddleware } = require("imicros-acl");
@@ -110,7 +111,7 @@ services:
 
     neo4j:
         image: neo4j
-        container_name: neo4j_groups
+        container_name: neo4j
     
         # only necessary for access neo4j directly via webinterface 
         ports:

@@ -23,7 +23,7 @@ const Store = {
                     attrib3: "Attribut 3"
                 };
                 this.logger.info("Store.add called", ctx.meta );
-                if (!await this.isAuthorized({ ctx: ctx, ressource: res, action: "create" })) throw new Error("not authorized");
+                await this.isAuthorized({ ctx: ctx, ressource: res, action: "create", abort: true });
                 return ctx.params.resId;
             }
         },
@@ -51,6 +51,11 @@ const Store = {
                 };
                 if (!await this.isAuthorized({ ctx: ctx, ressource: res, action: "delete" })) throw new Error("not authorized");
                 return true;
+            }
+        },
+        getOwnerId: {
+            handler(ctx) {
+                return this.getOwnerId({ ctx: ctx });
             }
         }
     }
@@ -85,8 +90,18 @@ describe("Test mixin service", () => {
             opts = { meta: { user: { id: `1-${timestamp}` , email: `1-${timestamp}@host.com` } } };
         });
 
+        it("it should return owner id", () => {
+            opts.meta.acl = { ownerId: `g-${timestamp}`, role: "member", unrestricted: true };
+            let params = {
+            };
+            return broker.call("Store.getOwnerId", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res).toEqual(opts.meta.acl.ownerId);
+            });
+        });
+        
         it("it should allow action create", () => {
-            opts.meta.acl = { owner: `g-${timestamp}`, role: "member", unrestricted: true };
+            opts.meta.acl = { ownerId: `g-${timestamp}`, role: "member", unrestricted: true };
             let params = {
                 resId: "R-" + timestamp
             };
@@ -97,7 +112,7 @@ describe("Test mixin service", () => {
         });
         
         it("it should allow action read", () => {
-            opts.meta.acl = { owner: `g-${timestamp}`, role: "member", unrestricted: true };
+            opts.meta.acl = { ownerId: `g-${timestamp}`, role: "member", unrestricted: true };
             let params = {
                 resId: "R-" + timestamp
             };
@@ -108,11 +123,19 @@ describe("Test mixin service", () => {
         });
         
         it("it should throw authorization error", async () => {
-            opts.meta.acl = { owner: `g-${timestamp}`, grants: [], restricted: true };
+            opts.meta.acl = { ownerId: `g-${timestamp}`, grants: [], restricted: true };
             let params = {
                 resId: "R-" + timestamp
             };
             await expect(broker.call("Store.get", params, opts)).rejects.toThrow("not authorized");
+        });
+        
+        it("it should throw acl authorization error", async () => {
+            opts.meta.acl = { ownerId: `g-${timestamp}`, grants: [], restricted: true };
+            let params = {
+                resId: "R-" + timestamp
+            };
+            await expect(broker.call("Store.add", params, opts)).rejects.toThrow("access not authorized");
         });
         
         it("it should allow action read", async () => {
@@ -126,7 +149,7 @@ describe("Test mixin service", () => {
                 id: "xyz",
                 function: new Function(strFunction)()
             };
-            opts.meta.acl = { owner: `g-${timestamp}`, grants: [grant], restricted: true };
+            opts.meta.acl = { ownerId: `g-${timestamp}`, grants: [grant], restricted: true };
             let params = {
                 resId: "R-" + timestamp
             };
@@ -147,7 +170,7 @@ describe("Test mixin service", () => {
                 id: "xyz",
                 function: new Function(strFunction)()
             };
-            opts.meta.acl = { owner: `g-${timestamp}`, grants: [grant], restricted: true };
+            opts.meta.acl = { ownerId: `g-${timestamp}`, grants: [grant], restricted: true };
             let params = {
                 resId: "R-" + timestamp
             };
@@ -155,7 +178,7 @@ describe("Test mixin service", () => {
         });
         
         it("it should allow action delete", () => {
-            opts.meta.acl = { owner: `g-${timestamp}`, role: "member", unrestricted: true };
+            opts.meta.acl = { ownerId: `g-${timestamp}`, role: "member", unrestricted: true };
             let params = {
                 resId: "R-" + timestamp
             };
