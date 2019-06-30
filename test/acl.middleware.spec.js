@@ -39,7 +39,7 @@ describe("Test service", () => {
             broker = new ServiceBroker({
                 logger: console,
                 logLevel: "debug", //"info"
-                middlewares: [AclMiddleware]
+                middlewares: [AclMiddleware({aclService: "acl"})]
             });
             aggregate = await broker.createService(AclAggregate, Object.assign({
                 settings: { 
