@@ -3,7 +3,7 @@ const { ServiceBroker } = require("moleculer");
 const { AclMiddleware } = require("../index");
 const { AclAggregate } = require("../index");
 const { Acl } = require("../index");
-const { AclMixin } = require("../index");
+// const { AclMixin } = require("../index");
 
 const fs = require("fs");
 process.env.JWT_SECRET = fs.readFileSync("dev/private.pem");
@@ -12,13 +12,22 @@ const timestamp = Date.now();
 
 const Service = {
     name: "service",
-    mixins: [AclMixin],
+    // mixins: [AclMixin],
     actions: {
         get: {
+            acl: "before",
             async handler(ctx) {
                 if (!ctx) throw new Error("missing context");
-                if (!await this.isAuthorized({ ctx: ctx, ressource: {}, action: "read" })) throw new Error("not authorized");
+                // if (!await this.isAuthorized({ ctx: ctx, ressource: {}, action: "read" })) throw new Error("not authorized");
                 return true;
+            }
+        },
+        get2: {
+            acl: "after",
+            async handler(ctx) {
+                if (!ctx) throw new Error("missing context");
+                // if (!await this.isAuthorized({ ctx: ctx, ressource: {}, action: "read" })) throw new Error("not authorized");
+                return { test: { a: "yes" } };
             }
         }
     }
@@ -39,7 +48,7 @@ describe("Test service", () => {
             broker = new ServiceBroker({
                 logger: console,
                 logLevel: "debug", //"info"
-                middlewares: [AclMiddleware({aclService: "acl"})]
+                middlewares: [AclMiddleware({service: "acl"})]
             });
             aggregate = await broker.createService(AclAggregate, Object.assign({
                 settings: { 
@@ -122,7 +131,8 @@ describe("Test service", () => {
             let exp;
             exp = "@@ ";
             exp += "~F user.id[..string]; > acl.result[string]:= 'decline'; > acl.rule[number]:= 0";
-            exp += "@ user.id :: '" + "U2-" + timestamp + "' => acl.result := 'allow'; acl.rule := 1";
+            exp += "@ user.id :: '" + "U2-" + timestamp + "' && environment.action.name :: 'service.get' => acl.result := 'allow'; acl.rule := 1";
+            exp += "@ user.id :: '" + "U2-" + timestamp + "' && result.test.a :: 'yes' => acl.result := 'allow'; acl.rule := 2";
             exp += "@@";            
             let params = {
                 forGroupId: "G2-" + timestamp,
@@ -182,6 +192,14 @@ describe("Test service", () => {
             });
         });
         
+        it("it should allow access by rule 2", async () => {
+            opts = { meta: { user: { id: `U2-${timestamp}` , email: `U2-${timestamp}@host.com` }, acl: { accessToken: token } } };
+            let params;
+            return broker.call("service.get2", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res).toEqual({"test": {"a": "yes"}});
+            });
+        });
         
     });
     
