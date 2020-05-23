@@ -156,6 +156,56 @@ describe("Test service", () => {
             });
         });
 
+        it("it should add a core group with a member", async () => {
+            let params = {
+                event: "groups.user.joined",
+                payload: {
+                    groupId: "GC-" + timestamp,
+                    userId: "UC-" + timestamp,
+                    role: "admin",
+                    core: true
+                },
+                version: "1",
+                uid: "UID-" + timestamp,
+                timestamp: timestamp 
+            };
+            return broker.call("acl.aggregate.eachEvent", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res).toEqual(true);
+            });
+        });
+
+        it("it should delete the core group user", async () => {
+            let params = {
+                event: "users.deleted",
+                payload: {
+                    userId: "UC-" + timestamp
+                },
+                version: "1",
+                uid: "UID-" + timestamp,
+                timestamp: timestamp 
+            };
+            return broker.call("acl.aggregate.eachEvent", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res).toEqual(true);
+            });
+        });
+
+        it("it should delete the core group", async () => {
+            let params = {
+                event: "groups.deleted",
+                payload: {
+                    groupId: "GC-" + timestamp
+                },
+                version: "1",
+                uid: "UID-" + timestamp,
+                timestamp: timestamp 
+            };
+            return broker.call("acl.aggregate.eachEvent", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res).toEqual(true);
+            });
+        });
         
     });
     

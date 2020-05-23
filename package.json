@@ -7,8 +7,8 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "jest --coverage --no-cache",
-    "test-local": "jest --coverage --no-cache --config=local.js",
+    "test": "jest --coverage --no-cache --silent",
+    "test-local": "jest --coverage --no-cache --config=local.js --silent",
     "test-db": "jest test/db.neo4j.spec.js --coverage --no-cache --config=local.js",
     "test-acl": "jest test/acl.spec.js --coverage --no-cache --config=local.js",
     "test-aggregate": "jest test/acl.aggregate.spec.js --coverage --no-cache --config=local.js",
