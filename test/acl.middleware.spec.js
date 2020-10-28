@@ -29,6 +29,13 @@ const Service = {
                 // if (!await this.isAuthorized({ ctx: ctx, ressource: {}, action: "read" })) throw new Error("not authorized");
                 return { test: { a: "yes" } };
             }
+        },
+        get3: {
+            acl: "core",
+            async handler(ctx) {
+                if (!ctx) throw new Error("missing context");
+                return { test: { core: "yes" } };
+            }
         }
     }
 };
@@ -143,6 +150,25 @@ describe("Test service", () => {
                 expect(res[0].ruleset).toEqual(exp);
             });
         });
+
+        it("it should add a core group with a member", async () => {
+            let params = {
+                event: "groups.user.joined",
+                payload: {
+                    groupId: "G3-" + timestamp,
+                    userId: "U3-" + timestamp,
+                    role: "member",
+                    core: true
+                },
+                version: "1",
+                uid: "UID-" + timestamp,
+                timestamp: timestamp 
+            };
+            return broker.call("acl.aggregate.eachEvent", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res).toEqual(true);
+            });
+        });
         
     });
 
@@ -171,6 +197,20 @@ describe("Test service", () => {
             });
         });
 
+        it("it should deny access for core group", async () => {
+            opts = { meta: { user: { id: `U-${timestamp}` , email: `U-${timestamp}@host.com` }, acl: { accessToken: token } } };
+            let params;
+            return broker.call("service.get3", params, opts)
+                .then(res => {
+                    console.log(res);
+                })
+                .catch(err => {
+                    expect(err.message).toEqual("access not authorized");
+                });
+            // expect(async () => { await broker.call("service.get3", params, opts); }).toThrow("access not authorized");
+        });
+        
+        
         it("it should give restricted access to a member", async () => {
             opts = { meta: { user: { id: `U2-${timestamp}` , email: `U2-${timestamp}@host.com` } } };
             let params = {
@@ -198,6 +238,28 @@ describe("Test service", () => {
             return broker.call("service.get2", params, opts).then(res => {
                 expect(res).toBeDefined();
                 expect(res).toEqual({"test": {"a": "yes"}});
+            });
+        });
+
+        it("it should give unrestricted access to a member of core group", async () => {
+            opts = { meta: { user: { id: `U3-${timestamp}` , email: `U3-${timestamp}@host.com` } } };
+            let params = {
+                forGroupId: "G3-" + timestamp
+            };
+            return broker.call("acl.requestAccess", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res.token).toBeDefined();
+                token = res.token;
+            });
+        });
+
+        
+        it("it should allow access for core group", async () => {
+            opts = { meta: { user: { id: `U3-${timestamp}` , email: `U3-${timestamp}@host.com` }, acl: { accessToken: token } } };
+            let params;
+            return broker.call("service.get3", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res).toEqual({"test": {"core": "yes"}});
             });
         });
         
