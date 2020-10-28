@@ -100,7 +100,46 @@ broker = new ServiceBroker({
 
 ```
 The middleware wraps localAction and verifies a given accesstoken in <code>ctx.meta.acl.accessToken</code> by calling service <code>acl.verify</code>.
-If successful verified further acl parameter are set which are used by <code>isAuthorized</code> method of the mixin.
+If successful verified further acl parameter are set which are used by <code>isAuthorized</code> method of the mixin or direct in the middleware.
+
+The acl check by the middleware can be triggered by an acl parameter in the action defintion:
+```
+const Service = {
+    name: "service",
+    actions: {
+        get1: {
+            acl: "before",          // acl check in the middleware is done before the action is called
+            async handler(ctx) {
+                ...
+                return true;
+            }
+        },
+        get2: {
+            acl: "after",           // acl check in the middleware is done after the action is called and can be now based on the result
+                                    // this is only useful in case of ruleset based grants
+            async handler(ctx) {
+                ...
+                return { test: { a: "yes" } };
+            }
+        },
+        get3: {
+            acl: "always",          // acl check in the middleware is done before and after the action is called
+                                    // this is only useful in case of ruleset based grants
+            async handler(ctx) {
+                ...
+                return { test: { a: "yes" } };
+            }
+        },
+        get4: {
+            acl: "core",            // access only for admin group created during initial start of the groups service
+            async handler(ctx) {
+                ...
+                return { test: { core: "yes" } };
+            }
+        }
+    }
+};
+```
 
 ## Docker
 ### Neo4j - example docker-compose file
