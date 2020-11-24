@@ -57,7 +57,7 @@
     "imicros-rules-compiler": "0.0.9",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.20",
-    "neo4j-driver": "^4.1.2",
+    "neo4j-driver": "^4.2.1",
     "object-mapper": "^6.2.0"
   }
 }
