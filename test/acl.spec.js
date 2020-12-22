@@ -109,6 +109,23 @@ describe("Test service", () => {
             });
         });
         
+        it("it should add a group account", async () => {
+            let params = {
+                event: "account.created",
+                payload: {
+                    accountId: "A1-" + timestamp,
+                    groupId: "G-" + timestamp
+                },
+                version: "1",
+                uid: "UID-" + timestamp,
+                timestamp: timestamp 
+            };
+            return broker.call("acl.aggregate.eachEvent", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res).toEqual(true);
+            });
+        });
+        
     });
     
     describe("Test grants", () => {
@@ -221,7 +238,23 @@ describe("Test service", () => {
                 expect(res.acl.grants[0].function).toEqual(await Compiler.compile(exp));
             });
         });
-    
+
+        it("it should give unrestricted access to an group account", async () => {
+            opts = {
+                meta: {
+                    serviceToken: "xy",
+                    accountId: "A1-" + timestamp
+                }
+            };
+            let params = {
+                forGroupId: "G-" + timestamp
+            };
+            return broker.call("acl.requestAccess", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res.token).toBeDefined();
+            });
+        });
+        
     });
     
     describe("Test stop broker", () => {
