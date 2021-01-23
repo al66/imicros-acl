@@ -29,6 +29,7 @@ describe("Test service", () => {
 
         it("it should start the broker", async () => {
             broker = new ServiceBroker({
+                nodeID: "my_broker",
                 logger: console,
                 logLevel: "debug" //"info"
             });
@@ -49,6 +50,7 @@ describe("Test service", () => {
             await broker.start();
             expect(aggregate).toBeDefined();
             expect(acl).toBeDefined();
+            expect(broker.nodeID).toEqual("my_broker");
         });
 
     });
@@ -173,7 +175,7 @@ describe("Test service", () => {
         
     describe("Test access", () => {
         
-        let token;
+        let token, grantToken;
         
         beforeEach(() => {
             opts = { meta: { user: { id: `U-${timestamp}` , email: `U-${timestamp}@host.com` } } };
@@ -207,6 +209,7 @@ describe("Test service", () => {
             };
             return broker.call("acl.verify", params, opts).then(res => {
                 expect(res.acl).toBeDefined();
+                expect(res.acl.nodeID).toEqual(broker.nodeID);
                 expect(res.acl.unrestricted).toEqual(true);
                 expect(res.acl.ownerId).toEqual("G-" + timestamp);
             });
@@ -232,29 +235,87 @@ describe("Test service", () => {
             };
             return broker.call("acl.verify", params, opts).then(async res => {
                 expect(res.acl).toBeDefined();
+                expect(res.acl.nodeID).toEqual(broker.nodeID);
                 expect(res.acl.unrestricted).not.toBeDefined();
+                expect(res.acl.restricted).toEqual(true);
                 expect(res.acl.ownerId).toEqual("G-" + timestamp);
                 expect(res.acl.grants).toHaveLength(1);
                 expect(res.acl.grants[0].function).toEqual(await Compiler.compile(exp));
             });
         });
 
-        it("it should give unrestricted access to an group account", async () => {
-            opts = {
-                meta: {
-                    serviceToken: "xy",
-                    accountId: "A1-" + timestamp
-                }
+        it("it should return a grant token", async () => {
+            opts.meta.service = {
+                serviceId: "Granted Service"
             };
-            let params = {
-                forGroupId: "G-" + timestamp
+            opts.meta.acl = {
+                ownerId: "G-" + timestamp
             };
-            return broker.call("acl.requestAccess", params, opts).then(res => {
+            let params = {};
+            return broker.call("acl.grantAccess", params, opts).then(res => {
                 expect(res).toBeDefined();
                 expect(res.token).toBeDefined();
+                grantToken = res.token;
             });
         });
-        
+
+        it("it should exchange the grant token", async () => {
+            opts.meta.service = {
+                serviceId: "Granted Service"
+            };
+            let params = {
+                token: grantToken
+            };
+            return broker.call("acl.exchangeToken", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res.token).toBeDefined();
+                token = res.token;
+            });
+        });
+      
+        it("it should return empty object due to wrong token type", async () => {
+            opts.meta.service = {
+                serviceId: "Granted Service"
+            };
+            let params = {
+                token: token
+            };
+            return broker.call("acl.exchangeToken", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res.token).not.toBeDefined();
+            });
+        });
+      
+        it("it should return empty object due to different serviceId", async () => {
+            opts.meta.service = {
+                serviceId: "Not Granted Service"
+            };
+            let params = {
+                token: grantToken
+            };
+            return broker.call("acl.exchangeToken", params, opts).then(res => {
+                expect(res).toBeDefined();
+                expect(res.token).not.toBeDefined();
+            });
+        });
+      
+      
+        it("it should verify the token", async () => {
+            opts.meta.service = {
+                serviceId: "Granted Service"
+            };
+            let params = {
+                token: token
+            };
+            return broker.call("acl.verify", params, opts).then(res => {
+                expect(res.acl).toBeDefined();
+                expect(res.acl.nodeID).toEqual(broker.nodeID);
+                expect(res.acl.unrestricted).toEqual(true);
+                expect(res.acl.ownerId).toEqual("G-" + timestamp);
+            });
+        });
+      
+      
     });
     
     describe("Test stop broker", () => {
