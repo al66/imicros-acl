@@ -7,6 +7,10 @@ const { Compiler } = require("imicros-rules-compiler");
 const timestamp = Date.now();
 
 const fs = require("fs");
+
+// helper & mocks
+const { Agents, Token, serviceId } = require("./helper/agents");
+
 process.env.JWT_SECRET = fs.readFileSync("dev/private.pem");
 
 let exp1; 
@@ -47,6 +51,8 @@ describe("Test service", () => {
                     password: "neo4j"
                 }
             }));
+            // Start additional services
+            [Agents].map(service => { return broker.createService(service); }); 
             await broker.start();
             expect(aggregate).toBeDefined();
             expect(acl).toBeDefined();
@@ -246,7 +252,7 @@ describe("Test service", () => {
 
         it("it should return a grant token", async () => {
             opts.meta.service = {
-                serviceId: "Granted Service"
+                serviceToken: Token.serviceToken
             };
             opts.meta.acl = {
                 ownerId: "G-" + timestamp
@@ -261,7 +267,7 @@ describe("Test service", () => {
 
         it("it should exchange the grant token", async () => {
             opts.meta.service = {
-                serviceId: "Granted Service"
+                serviceToken: Token.serviceToken
             };
             let params = {
                 token: grantToken
@@ -275,7 +281,7 @@ describe("Test service", () => {
       
         it("it should return empty object due to wrong token type", async () => {
             opts.meta.service = {
-                serviceId: "Granted Service"
+                serviceToken: Token.serviceToken
             };
             let params = {
                 token: token
@@ -301,8 +307,9 @@ describe("Test service", () => {
       
       
         it("it should verify the token", async () => {
+            
             opts.meta.service = {
-                serviceId: "Granted Service"
+                serviceId
             };
             let params = {
                 token: token
