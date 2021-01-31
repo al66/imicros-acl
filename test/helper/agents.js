@@ -18,8 +18,8 @@ const Agents = {
             async handler({ params: { serviceToken }}) {
                 this.logger.info("agents.verify called", { serviceToken } );
                 if (serviceToken) {
-                    this.logger.info("agents.verify returned", { serviceId } );
-                    return { serviceId }; 
+                    this.logger.info("agents.verify returned", { service: { serviceId } } );
+                    return { service: { serviceId } }; 
                 }
                 return false;
             }
