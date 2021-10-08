@@ -14,16 +14,13 @@ const Test = {
     name: "test.db",
     mixins: [dbMixin],
     settings: { 
-        uri: process.env.NEO4J_URI || "bolt://localhost:7687",
-        user: "neo4j",
-        password: "neo4j"
     }, 
     actions: {
         run(ctx) {
             return this.run(ctx.params)
-            .then(res => {
-                return res;
-            });    
+                .then(res => {
+                    return res;
+                });    
         }
     }
 };
@@ -40,8 +37,8 @@ describe("Test db.neo4j", () => {
         await broker.start();
     });
 
-    afterAll(async (done) => {
-        await broker.stop().then(() => done());
+    afterAll(async () => {
+        await broker.stop();
     });
     
     it("service should be created", () => {

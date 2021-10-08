@@ -77,7 +77,7 @@ describe("Test mixin service", () => {
                 logger: console,
                 logLevel: "info" //"debug"
             });
-            store = await broker.createService(Store, Object.assign({}));
+            store = broker.createService(Store);
             await broker.start();
             expect(store).toBeDefined();
         });

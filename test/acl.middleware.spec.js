@@ -57,21 +57,9 @@ describe("Test service", () => {
                 logLevel: "debug", //"info"
                 middlewares: [AclMiddleware({service: "acl"})]
             });
-            aggregate = await broker.createService(AclAggregate, Object.assign({
-                settings: { 
-                    uri: process.env.NEO4J_URI || "bolt://localhost:7687",
-                    user: "neo4j",
-                    password: "neo4j"
-                }
-            }));
-            acl = await broker.createService(Acl, Object.assign({
-                settings: { 
-                    uri: process.env.NEO4J_URI || "bolt://localhost:7687",
-                    user: "neo4j",
-                    password: "neo4j"
-                }
-            }));
-            service = await broker.createService(Service);
+            aggregate = broker.createService(AclAggregate);
+            acl = broker.createService(Acl);
+            service = broker.createService(Service);
             await broker.start();
             expect(acl).toBeDefined();
             expect(aggregate).toBeDefined();

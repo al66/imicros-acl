@@ -20,13 +20,7 @@ describe("Test service", () => {
                 logger: console,
                 logLevel: "debug" //"info"
             });
-            aggregate = await broker.createService(AclAggregate, Object.assign({
-                settings: { 
-                    uri: process.env.NEO4J_URI || "bolt://localhost:7687",
-                    user: "neo4j",
-                    password: "neo4j"
-                }
-            }));
+            aggregate = broker.createService(AclAggregate);
             await broker.start();
             expect(aggregate).toBeDefined();
         });
